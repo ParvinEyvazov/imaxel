@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(
+        fetch("main.wasm"),
+        go.importObject
+      ).then((result) => {
+        go.run(result.instance);
+      });
+    </script>
+  </head>
+
+  <body>
+    <div>
+      <label for="image1">Image 1</label>
+      <input type="file" id="image1" />
+
+      <label for="image2">Image 2</label>
+      <input type="file" id="image2" />
+
+      <button id="find-difference">Find difference</button>
+
+      <div id="error" style="color: red"></div>
+    </div>
+    <script>
+      var image1 = document.querySelector("#image1");
+      var image2 = document.querySelector("#image2");
+      var errorMSG = document.querySelector("#error");
+
+      document
+        .getElementById("find-difference")
+        .addEventListener("click", function () {
+          errorMSG.innerHTML = "";
+          let file1 = image1.files[0];
+          let file2 = image2.files[0];
+
+          if (file1 == undefined || file2 == undefined) {
+            errorMSG.innerHTML = "Please upload both images.";
+          }
+
+          // both images are uploaded successfully
+          let reader1 = new FileReader();
+          let reader2 = new FileReader();
+
+          const file1ByteArray = [];
+          const file2ByteArray = [];
+
+          reader1.readAsArrayBuffer(file1);
+          reader2.readAsArrayBuffer(file2);
+
+          reader1.onloadend = (evt) => {
+            if (evt.target.readyState === FileReader.DONE) {
+              const arrayBuffer = evt.target.result,
+                array = new Uint8Array(arrayBuffer);
+              for (const a of array) {
+                file1ByteArray.push(a);
+              }
+              console.log(`uploaded`, file1ByteArray);
+            }
+          };
+
+          reader2.onloadend = (evt) => {
+            if (evt.target.readyState === FileReader.DONE) {
+              const arrayBuffer = evt.target.result,
+                array = new Uint8Array(arrayBuffer);
+              for (const a of array) {
+                file2ByteArray.push(a);
+              }
+              console.log(`uploaded`, file2ByteArray);
+            }
+          };
+        });
+    </script>
+  </body>
+</html>
