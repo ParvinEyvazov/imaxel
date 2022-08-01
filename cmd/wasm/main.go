@@ -83,16 +83,15 @@ func difference(this js.Value, args []js.Value) interface{} {
 
 func equalPixelCount(bounds1, bounds2 image.Rectangle) (err error) {
 
-	equality := bounds1.Min.X == bounds2.Min.X ||
-		bounds1.Max.X == bounds2.Max.X ||
-		bounds1.Min.Y == bounds2.Min.Y ||
+	equality := bounds1.Min.X == bounds2.Min.X &&
+		bounds1.Max.X == bounds2.Max.X &&
+		bounds1.Min.Y == bounds2.Min.Y &&
 		bounds1.Max.Y == bounds2.Max.Y
 
-	if !equality {
-
+	if equality == false {
 		err = errors.New("Images are not pixely equal")
 
-		return
+		return err
 	}
 
 	return
