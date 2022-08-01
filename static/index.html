@@ -24,15 +24,18 @@
       <button id="find-difference">Find difference</button>
 
       <div id="error" style="color: red"></div>
+
+      <div id="pixels" style="color: blue"></div>
     </div>
     <script>
       var image1 = document.querySelector("#image1");
       var image2 = document.querySelector("#image2");
       var errorMSG = document.querySelector("#error");
+      var pixelElement = document.querySelector("#pixels");
 
       document
         .getElementById("find-difference")
-        .addEventListener("click", function () {
+        .addEventListener("click", async function () {
           errorMSG.innerHTML = "";
           let file1 = image1.files[0];
           let file2 = image2.files[0];
@@ -44,34 +47,56 @@
           // both images are uploaded successfully
           let reader1 = new FileReader();
           let reader2 = new FileReader();
-
-          const file1ByteArray = [];
-          const file2ByteArray = [];
+          let promises = [];
 
           reader1.readAsArrayBuffer(file1);
           reader2.readAsArrayBuffer(file2);
 
-          reader1.onloadend = (evt) => {
-            if (evt.target.readyState === FileReader.DONE) {
-              const arrayBuffer = evt.target.result,
-                array = new Uint8Array(arrayBuffer);
-              for (const a of array) {
-                file1ByteArray.push(a);
-              }
-              console.log(`uploaded`, file1ByteArray);
-            }
-          };
+          const promise1 = new Promise((resolve) => {
+            let arr = [];
+            reader1.onloadend = (evt) => {
+              if (evt.target.readyState === FileReader.DONE) {
+                const arrayBuffer = evt.target.result,
+                  array = new Uint8Array(arrayBuffer);
 
-          reader2.onloadend = (evt) => {
-            if (evt.target.readyState === FileReader.DONE) {
-              const arrayBuffer = evt.target.result,
-                array = new Uint8Array(arrayBuffer);
-              for (const a of array) {
-                file2ByteArray.push(a);
+                resolve(array);
               }
-              console.log(`uploaded`, file2ByteArray);
-            }
-          };
+            };
+          });
+          promises.push(promise1);
+
+          const promise2 = new Promise((resolve) => {
+            let arr = [];
+            reader2.onloadend = (evt) => {
+              if (evt.target.readyState === FileReader.DONE) {
+                const arrayBuffer = evt.target.result,
+                  array = new Uint8Array(arrayBuffer);
+
+                resolve(array);
+              }
+            };
+          });
+          promises.push(promise2);
+
+          const [file1ByteArray, file2ByteArray] = await Promise.all(promises);
+
+          let a = difference(file1ByteArray, file2ByteArray);
+
+          pixelElement.innerHTML = "";
+
+          pixelElement.insertAdjacentHTML(
+            "beforeend",
+            `<div> Different pixels: </div>`
+          );
+
+          for (let point of JSON.parse(a)) {
+            pixelElement.insertAdjacentHTML(
+              "beforeend",
+              `<div> X: ${point.X} Y: ${point.Y} </div>`
+            );
+          }
+
+          console.log(`a`, JSON.parse(a));
         });
     </script>
   </body>
