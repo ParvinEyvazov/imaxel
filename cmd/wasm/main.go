@@ -101,6 +101,6 @@ func equalPixelCount(bounds1, bounds2 image.Rectangle) (err error) {
 func mustError(err error) {
 
 	if err != nil {
-		log.Println(err)
+		log.Fatalln(err)
 	}
 }
